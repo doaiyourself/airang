@@ -1,0 +1,17 @@
+{
+  "name": "@airang/db",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.48.1",
+    "@supabase/ssr": "^0.5.2"
+  },
+  "devDependencies": {
+    "@airang/config": "workspace:*",
+    "typescript": "^5.7.3"
+  }
+}
