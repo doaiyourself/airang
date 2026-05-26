@@ -31,7 +31,7 @@ export default async function ProfilePage() {
   const pregRaw = membership?.pregnancies;
   const pregnancy = (Array.isArray(pregRaw) ? pregRaw[0] : pregRaw) as PregData | null ?? null;
 
-  const { data: totalRecords } = await supabase
+  const { count: totalRecordCount } = await supabase
     .from("records")
     .select("id", { count: "exact", head: true })
     .eq("pregnancy_id", pregnancy?.id ?? "");
@@ -77,7 +77,7 @@ export default async function ProfilePage() {
                 <p className="text-xs mt-0.5" style={{ color: "#9C8FA0" }}>출산까지 (일)</p>
               </div>
               <div className="p-3 rounded-2xl" style={{ backgroundColor: "#F5F0FF" }}>
-                <p className="text-2xl font-bold" style={{ color: "#C8B8E8" }}>{(totalRecords as { count?: number } | null)?.count ?? 0}</p>
+                <p className="text-2xl font-bold" style={{ color: "#C8B8E8" }}>{totalRecordCount ?? 0}</p>
                 <p className="text-xs mt-0.5" style={{ color: "#9C8FA0" }}>총 기록 수</p>
               </div>
             </div>
