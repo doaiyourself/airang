@@ -32,7 +32,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 보호된 경로: 로그인 필요
-  const protectedPaths = ["/home", "/week", "/records", "/family", "/couple", "/profile"];
+  const protectedPaths = ["/home", "/records", "/family", "/couple", "/profile"];
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
 
   // 인증 경로: 로그인된 경우 홈으로 리다이렉트

@@ -23,9 +23,13 @@ export function TimelineNav({ currentWeek }: TimelineNavProps) {
 
   return (
     <div className="px-4 py-3 max-w-2xl mx-auto">
-      <p className="text-xs font-medium mb-2" style={{ color: "#5C5860" }}>
-        주차별 기록 보기
-      </p>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-medium" style={{ color: "#5C5860" }}>주차별 기록 보기</p>
+        <Link href="/timeline" className="text-xs font-medium px-3 py-1 rounded-full"
+          style={{ backgroundColor: "#F5EBE0", color: "#5C5860" }}>
+          전체 타임라인 보기 →
+        </Link>
+      </div>
       <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
         {weeks.map((week) => {
           const isCurrent = week === currentWeek;
