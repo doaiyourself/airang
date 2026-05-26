@@ -62,7 +62,7 @@ export default async function RecordsPage({ searchParams }: Props) {
   );
 
   return (
-    <div className="min-h-screen pb-24" style={{ backgroundColor: "#FDFAF7" }}>
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "#FDFAF7" }}>
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 border-b"
         style={{ backgroundColor: "#FDFAF7", borderColor: "#F5EBE0" }}>
@@ -182,7 +182,7 @@ export default async function RecordsPage({ searchParams }: Props) {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-20 right-6 z-50">
         <Link href="/home"
           className="flex items-center gap-2 px-5 py-3 rounded-full text-white font-semibold text-sm shadow-lg"
           style={{ backgroundColor: "#FFB4A2" }}>

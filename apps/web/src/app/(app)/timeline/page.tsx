@@ -49,7 +49,7 @@ export default async function TimelinePage() {
   }
 
   return (
-    <div className="min-h-screen pb-20" style={{ backgroundColor: "#FDFAF7" }}>
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "#FDFAF7" }}>
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 border-b"
         style={{ backgroundColor: "#FDFAF7", borderColor: "#F5EBE0" }}>

@@ -35,7 +35,7 @@ export default async function RecordDetailPage({ params }: Props) {
   const content = record.content as Record<string, unknown> | null;
 
   return (
-    <div className="min-h-screen pb-24" style={{ backgroundColor: "#FDFAF7" }}>
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "#FDFAF7" }}>
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center gap-3 px-4 py-3 border-b"
         style={{ backgroundColor: "#FDFAF7", borderColor: "#F5EBE0" }}>
