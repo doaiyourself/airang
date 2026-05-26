@@ -1,8 +1,9 @@
 "use client";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { RecordFormLayout } from "@/components/records/RecordFormLayout";
+import { usePregnancy } from "@/hooks/usePregnancy";
 
 const EMOTIONS = [
   { emoji: "😊", label: "행복" },
@@ -22,7 +23,14 @@ const VISIBILITY_OPTIONS = [
 function DiaryForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const pregnancyId = searchParams.get("pregnancyId") ?? "";
+  const weekParam = parseInt(searchParams.get("week") ?? "0", 10);
+
+  const { info, loading: pregnancyLoading } = usePregnancy();
+  const [week, setWeek] = useState(weekParam || 0);
+
+  useEffect(() => {
+    if (info && !week) setWeek(info.currentWeek);
+  }, [info]);
 
   const [emotion, setEmotion] = useState("");
   const [body, setBody] = useState("");
@@ -33,6 +41,7 @@ function DiaryForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!body.trim()) { setError("일기 내용을 입력해주세요."); return; }
+    if (!info?.pregnancyId) { setError("임신 정보를 불러올 수 없어요."); return; }
     setLoading(true);
     setError("");
 
@@ -41,9 +50,10 @@ function DiaryForm() {
     if (!user) { router.push("/login"); return; }
 
     const { error: insertError } = await supabase.from("records").insert({
-      pregnancy_id: pregnancyId,
+      pregnancy_id: info.pregnancyId,
       author_id: user.id,
       type: "diary",
+      week_number: week,
       record_date: new Date().toISOString().split("T")[0],
       visibility,
       content: { emotion, body },
@@ -55,12 +65,21 @@ function DiaryForm() {
       return;
     }
 
-    router.push("/home");
+    router.push(`/week/${week}`);
     router.refresh();
   };
 
+  if (pregnancyLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#FDFAF7" }}>
+        <p style={{ color: "#5C5860" }}>불러오는 중...</p>
+      </div>
+    );
+  }
+
   return (
-    <RecordFormLayout title="일기 쓰기" emoji="📔" onBack={() => router.back()}>
+    <RecordFormLayout title="일기 쓰기" emoji="📔" onBack={() => router.back()}
+      week={week || null} onWeekChange={setWeek}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         {error && (
           <div className="px-4 py-3 rounded-xl text-sm" style={{ backgroundColor: "#FFF0F0", color: "#E53E3E" }}>{error}</div>

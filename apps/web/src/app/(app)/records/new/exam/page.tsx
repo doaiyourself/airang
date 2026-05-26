@@ -1,15 +1,23 @@
 "use client";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { RecordFormLayout } from "@/components/records/RecordFormLayout";
+import { usePregnancy } from "@/hooks/usePregnancy";
 
 const EXAM_TYPES = ["NT 검사", "정밀 초음파", "임당 검사", "혈액 검사", "소변 검사", "태동 검사 (NST)", "기타"];
 
 function ExamForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const pregnancyId = searchParams.get("pregnancyId") ?? "";
+  const weekParam = parseInt(searchParams.get("week") ?? "0", 10);
+
+  const { info, loading: pregnancyLoading } = usePregnancy();
+  const [week, setWeek] = useState(weekParam || 0);
+
+  useEffect(() => {
+    if (info && !week) setWeek(info.currentWeek);
+  }, [info]);
 
   const [examType, setExamType] = useState("");
   const [hospital, setHospital] = useState("");
@@ -26,6 +34,7 @@ function ExamForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!examType) { setError("검사 종류를 선택해주세요."); return; }
+    if (!info?.pregnancyId) { setError("임신 정보를 불러올 수 없어요."); return; }
     setLoading(true);
     setError("");
 
@@ -33,11 +42,10 @@ function ExamForm() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/login"); return; }
 
-    // 이미지 업로드
     const imageUrls: string[] = [];
     for (const file of images) {
       const ext = file.name.split(".").pop();
-      const path = `records/${pregnancyId}/${Date.now()}.${ext}`;
+      const path = `records/${info.pregnancyId}/${Date.now()}.${ext}`;
       const { error: uploadError } = await supabase.storage.from("records").upload(path, file);
       if (!uploadError) {
         const { data } = supabase.storage.from("records").getPublicUrl(path);
@@ -46,9 +54,10 @@ function ExamForm() {
     }
 
     const { data: record, error: insertError } = await supabase.from("records").insert({
-      pregnancy_id: pregnancyId,
+      pregnancy_id: info.pregnancyId,
       author_id: user.id,
       type: "exam",
+      week_number: week,
       record_date: new Date().toISOString().split("T")[0],
       visibility: "couple",
       content: { exam_type: examType, hospital, image_urls: imageUrls, doctor_note: doctorNote },
@@ -60,12 +69,21 @@ function ExamForm() {
       return;
     }
 
-    router.push(imageUrls.length > 0 ? `/records/${record.id}?analyze=true` : "/home");
+    router.push(imageUrls.length > 0 ? `/records/${record.id}?analyze=true` : `/week/${week}`);
     router.refresh();
   };
 
+  if (pregnancyLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#FDFAF7" }}>
+        <p style={{ color: "#5C5860" }}>불러오는 중...</p>
+      </div>
+    );
+  }
+
   return (
-    <RecordFormLayout title="검사 기록" emoji="🏥" onBack={() => router.back()}>
+    <RecordFormLayout title="검사 기록" emoji="🏥" onBack={() => router.back()}
+      week={week || null} onWeekChange={setWeek}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         {error && (
           <div className="px-4 py-3 rounded-xl text-sm" style={{ backgroundColor: "#FFF0F0", color: "#E53E3E" }}>{error}</div>

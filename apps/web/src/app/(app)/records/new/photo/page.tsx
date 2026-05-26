@@ -1,8 +1,9 @@
 "use client";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { RecordFormLayout } from "@/components/records/RecordFormLayout";
+import { usePregnancy } from "@/hooks/usePregnancy";
 
 const CATEGORIES = [
   { value: "belly", label: "🤰 배 사진" },
@@ -14,7 +15,14 @@ const CATEGORIES = [
 function PhotoForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const pregnancyId = searchParams.get("pregnancyId") ?? "";
+  const weekParam = parseInt(searchParams.get("week") ?? "0", 10);
+
+  const { info, loading: pregnancyLoading } = usePregnancy();
+  const [week, setWeek] = useState(weekParam || 0);
+
+  useEffect(() => {
+    if (info && !week) setWeek(info.currentWeek);
+  }, [info]);
 
   const [images, setImages] = useState<File[]>([]);
   const [category, setCategory] = useState("daily");
@@ -29,7 +37,7 @@ function PhotoForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (images.length === 0) return;
+    if (images.length === 0 || !info?.pregnancyId) return;
     setLoading(true);
 
     const supabase = createClient();
@@ -39,7 +47,7 @@ function PhotoForm() {
     const imageUrls: string[] = [];
     for (const file of images) {
       const ext = file.name.split(".").pop();
-      const path = `records/${pregnancyId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+      const path = `records/${info.pregnancyId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
       const { error } = await supabase.storage.from("records").upload(path, file);
       if (!error) {
         const { data } = supabase.storage.from("records").getPublicUrl(path);
@@ -48,20 +56,30 @@ function PhotoForm() {
     }
 
     await supabase.from("records").insert({
-      pregnancy_id: pregnancyId,
+      pregnancy_id: info.pregnancyId,
       author_id: user.id,
       type: "photo",
+      week_number: week,
       record_date: new Date().toISOString().split("T")[0],
       visibility,
       content: { photo_urls: imageUrls, category, caption },
     });
 
-    router.push("/home");
+    router.push(`/week/${week}`);
     router.refresh();
   };
 
+  if (pregnancyLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#FDFAF7" }}>
+        <p style={{ color: "#5C5860" }}>불러오는 중...</p>
+      </div>
+    );
+  }
+
   return (
-    <RecordFormLayout title="사진 올리기" emoji="📸" onBack={() => router.back()}>
+    <RecordFormLayout title="사진 올리기" emoji="📸" onBack={() => router.back()}
+      week={week || null} onWeekChange={setWeek}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div>
           <label className="block text-sm font-medium mb-2" style={{ color: "#2D2A2E" }}>사진 선택 (최대 10장)</label>

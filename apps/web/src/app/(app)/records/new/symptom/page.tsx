@@ -1,8 +1,9 @@
 "use client";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { RecordFormLayout } from "@/components/records/RecordFormLayout";
+import { usePregnancy } from "@/hooks/usePregnancy";
 
 const SYMPTOM_TAGS = [
   "입덧", "피로", "요통", "부종", "불면", "두통", "속쓰림",
@@ -12,7 +13,14 @@ const SYMPTOM_TAGS = [
 function SymptomForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const pregnancyId = searchParams.get("pregnancyId") ?? "";
+  const weekParam = parseInt(searchParams.get("week") ?? "0", 10);
+
+  const { info, loading: pregnancyLoading } = usePregnancy();
+  const [week, setWeek] = useState(weekParam || 0);
+
+  useEffect(() => {
+    if (info && !week) setWeek(info.currentWeek);
+  }, [info]);
 
   const [tags, setTags] = useState<string[]>([]);
   const [intensity, setIntensity] = useState(3);
@@ -25,7 +33,7 @@ function SymptomForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (tags.length === 0) return;
+    if (tags.length === 0 || !info?.pregnancyId) return;
     setLoading(true);
 
     const supabase = createClient();
@@ -33,23 +41,33 @@ function SymptomForm() {
     if (!user) { router.push("/login"); return; }
 
     await supabase.from("records").insert({
-      pregnancy_id: pregnancyId,
+      pregnancy_id: info.pregnancyId,
       author_id: user.id,
       type: "symptom",
+      week_number: week,
       record_date: new Date().toISOString().split("T")[0],
       visibility: "family",
       content: { tags, intensity, memo },
     });
 
-    router.push("/home");
+    router.push(`/week/${week}`);
     router.refresh();
   };
 
   const intensityLabels = ["", "아주 약해요", "약해요", "보통이에요", "심해요", "아주 심해요"];
   const intensityColors = ["", "#B5E4CA", "#B5E4CA", "#FFD166", "#FFB4A2", "#FF8FA3"];
 
+  if (pregnancyLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#FDFAF7" }}>
+        <p style={{ color: "#5C5860" }}>불러오는 중...</p>
+      </div>
+    );
+  }
+
   return (
-    <RecordFormLayout title="증상 기록" emoji="🤒" onBack={() => router.back()}>
+    <RecordFormLayout title="증상 기록" emoji="🤒" onBack={() => router.back()}
+      week={week || null} onWeekChange={setWeek}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <div>
           <label className="block text-sm font-medium mb-3" style={{ color: "#2D2A2E" }}>
