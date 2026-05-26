@@ -16,5 +16,15 @@
   "packageManager": "pnpm@11.3.0",
   "engines": {
     "node": ">=20"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp",
+      "unrs-resolver",
+      "@img/sharp-linux-x64",
+      "@img/sharp-linux-arm64",
+      "@img/sharp-darwin-arm64",
+      "@img/sharp-darwin-x64"
+    ]
   }
 }
