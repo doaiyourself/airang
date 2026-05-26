@@ -245,7 +245,7 @@ export default async function HomePage() {
                 <p className="text-xs" style={{ color: "#9C8FA0" }}>이번 주 {thisWeekCount ?? 0}개</p>
               </div>
             </div>
-            <Link href={`/week/${currentWeek}`} className="text-xs px-3 py-1 rounded-full" style={{ backgroundColor: "#F5EBE0", color: "#5C5860" }}>
+            <Link href="/records" className="text-xs px-3 py-1 rounded-full" style={{ backgroundColor: "#F5EBE0", color: "#5C5860" }}>
               전체 보기 →
             </Link>
           </div>
