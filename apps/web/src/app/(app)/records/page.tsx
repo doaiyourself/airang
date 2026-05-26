@@ -155,7 +155,7 @@ export default async function RecordsPage({ searchParams }: Props) {
                     {preview && (
                       <p className="text-sm truncate" style={{ color: "#2D2A2E" }}>{preview}</p>
                     )}
-                    {record.type === "photo" && content?.photo_urls && Array.isArray(content.photo_urls) && content.photo_urls.length > 0 && (
+                    {record.type === "photo" && content != null && Array.isArray(content.photo_urls) && (content.photo_urls as string[]).length > 0 && (
                       <div className="flex gap-1.5 mt-2">
                         {(content.photo_urls as string[]).slice(0, 3).map((url, i) => (
                           <img key={i} src={url} alt="" className="w-14 h-14 rounded-xl object-cover" />
