@@ -2,17 +2,32 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: Supabase auth
-    setTimeout(() => setLoading(false), 1000);
+    setError("");
+
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      setError("이메일 또는 비밀번호가 올바르지 않아요.");
+      setLoading(false);
+      return;
+    }
+
+    router.push("/home");
+    router.refresh();
   };
 
   return (
@@ -29,31 +44,33 @@ export default function LoginPage() {
 
         <div className="bg-white rounded-3xl p-6 shadow-sm">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {error && (
+              <div className="px-4 py-3 rounded-xl text-sm" style={{ backgroundColor: "#FFF0F0", color: "#E53E3E" }}>
+                {error}
+              </div>
+            )}
+
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: "#2D2A2E" }}>
-                이메일
-              </label>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: "#2D2A2E" }}>이메일</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="example@email.com"
-                className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors"
+                className="w-full px-4 py-3 rounded-xl border text-sm outline-none"
                 style={{ borderColor: "#EDD5C0", backgroundColor: "#FDFAF7" }}
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: "#2D2A2E" }}>
-                비밀번호
-              </label>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: "#2D2A2E" }}>비밀번호</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="비밀번호를 입력해주세요"
-                className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors"
+                className="w-full px-4 py-3 rounded-xl border text-sm outline-none"
                 style={{ borderColor: "#EDD5C0", backgroundColor: "#FDFAF7" }}
                 required
               />
