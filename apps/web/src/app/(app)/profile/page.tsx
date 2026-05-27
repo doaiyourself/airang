@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { LogoutButton } from "@/components/profile/LogoutButton";
+import { PushNotificationToggle } from "@/components/profile/PushNotificationToggle";
 
 function calculateWeek(lmp: string) {
   const lmpDate = new Date(lmp);
@@ -127,6 +128,11 @@ export default async function ProfilePage() {
             </div>
             <span style={{ color: "#C4B8B0" }}>›</span>
           </Link>
+        </div>
+
+        {/* 알림 설정 */}
+        <div className="rounded-3xl overflow-hidden" style={{ backgroundColor: "white", border: "1px solid #F5EBE0" }}>
+          <PushNotificationToggle />
         </div>
 
         {/* 로그아웃 */}

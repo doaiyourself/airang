@@ -9,10 +9,13 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@airang/db": "workspace:*",
+    "@airang/lib": "workspace:*",
     "@hookform/resolvers": "^5.4.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.2",
     "@tanstack/react-query": "^5.100.14",
+    "@types/web-push": "^3.6.4",
     "ai": "^6.0.191",
     "date-fns": "^4.3.0",
     "lucide-react": "^1.16.0",
@@ -20,10 +23,9 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.76.1",
+    "web-push": "^3.6.7",
     "zod": "^4.4.3",
-    "zustand": "^5.0.13",
-    "@airang/lib": "workspace:*",
-    "@airang/db": "workspace:*"
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
