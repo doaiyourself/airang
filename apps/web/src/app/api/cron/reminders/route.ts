@@ -6,12 +6,6 @@ import { weeklyGuide } from "@/lib/weeklyGuide";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-webpush.setVapidDetails(
-  process.env.VAPID_EMAIL ?? "mailto:contact@airang.app",
-  process.env.VAPID_PUBLIC_KEY ?? "",
-  process.env.VAPID_PRIVATE_KEY ?? ""
-);
-
 function calcWeek(lmp: string): number {
   const lmpDate = new Date(lmp);
   const today = new Date();
@@ -32,9 +26,15 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return NextResponse.json({ error: "Missing SUPABASE_SERVICE_ROLE_KEY" }, { status: 500 });
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    return NextResponse.json({ error: "Missing required environment variables" }, { status: 500 });
   }
+
+  webpush.setVapidDetails(
+    process.env.VAPID_EMAIL ?? "mailto:contact@airang.app",
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
