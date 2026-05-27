@@ -50,14 +50,37 @@ export default function SignupPage() {
     }
 
     if (form.role === "invite") {
-      // 초대 코드 처리
       if (!form.inviteCode) {
         setError("초대 코드를 입력해주세요.");
         setLoading(false);
         return;
       }
-      // TODO: 초대 코드 조회 및 family_members 추가
+      const supabase = createClient();
+      const { data: invite } = await supabase
+        .from("invite_codes")
+        .select("id, pregnancy_id, expires_at, used_by")
+        .eq("code", form.inviteCode.toUpperCase())
+        .single();
+
+      if (!invite || invite.used_by || new Date(invite.expires_at) < new Date()) {
+        setError("유효하지 않은 초대 코드예요.");
+        setLoading(false);
+        return;
+      }
+
+      await supabase.from("family_members").insert({
+        pregnancy_id: invite.pregnancy_id,
+        user_id: authData.user!.id,
+        role: "partner",
+      });
+
+      await supabase.from("invite_codes").update({
+        used_by: authData.user!.id,
+        used_at: new Date().toISOString(),
+      }).eq("id", invite.id);
+
       setStep("done");
+      setTimeout(() => router.push("/home"), 1500);
     } else {
       setStep("pregnancy");
     }
